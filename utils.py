@@ -1,6 +1,5 @@
 from vinted_scraper import VintedScraper
 import sqlite3
-import requests
 
 db = "vinted_bot.db"
 

@@ -1,0 +1,3 @@
+vinted_scraper
+sqlite3
+time
