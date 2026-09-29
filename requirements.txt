@@ -1,3 +1,4 @@
 vinted_scraper
 streamlit
 streamlit[auth]
+libsql_client
