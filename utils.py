@@ -3,6 +3,7 @@ from vinted_scraper import VintedScraper
 import libsql_client
 
 def get_client():
+    st.write(st.secrets["turso"]["url"])
     return libsql_client.create_client_sync(url=st.secrets["turso"]["url"], auth_token=st.secrets["turso"]["auth_token"],)
 
 def init_db():
