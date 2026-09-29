@@ -1,56 +1,46 @@
+import streamlit as st
 from vinted_scraper import VintedScraper
-import sqlite3
+import libsql_client
 
-db = "vinted_bot.db"
+def get_client():
+    return libsql_client.create_client_sync(url=st.secrets["turso"]["url"], auth_token=st.secrets["turso"]["auth_token"],)
 
 def init_db():
-    conn = sqlite3.connect(db)
-    cur = conn.cursor()
-    cur.executescript("CREATE TABLE IF NOT EXISTS users \
-                 (google_sub TEXT PRIMARY KEY, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);" \
-                 "CREATE TABLE IF NOT EXISTS search_query \
+    client = get_client()
+    client.execute("CREATE TABLE IF NOT EXISTS users \
+                 (google_sub TEXT PRIMARY KEY, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
+    client.execute("CREATE TABLE IF NOT EXISTS search_query \
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, google_sub TEXT REFERENCES users(google_sub), title TEXT, sizes TEXT, price_from TEXT, price_to TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
-    conn.commit()
-    conn.close()
+    client.close()
 
 def insert_user(google_sub, name):
-    conn = sqlite3.connect(db)
-    cur = conn.cursor()
-    cur.execute("INSERT INTO users (google_sub,name) VALUES (?,?) ON CONFLICT(google_sub) DO UPDATE SET name = excluded.name", (google_sub,name,))
-    conn.commit()
-    conn.close()
+    client = get_client()
+    client.execute("INSERT INTO users (google_sub,name) VALUES (?,?) ON CONFLICT(google_sub) DO UPDATE SET name = excluded.name",[google_sub,name])
+    client.close()
 
 def insert_search(google_sub, title, sizes, price_from, price_to):
-    conn = sqlite3.connect(db)
-    cur = conn.cursor()
-    cur.execute("INSERT INTO search_query (google_sub, title, sizes, price_from, price_to) VALUES (?,?,?,?,?)", (google_sub, title, sizes, price_from, price_to,))
-    conn.commit()
-    conn.close()
+    client = get_client()
+    client.execute("INSERT INTO search_query (google_sub, title, sizes, price_from, price_to) VALUES (?,?,?,?,?)", [google_sub, title, sizes, price_from, price_to])
+    client.close()
 
 def get_user_searches(google_sub):
-    conn = sqlite3.connect(db)
-    cur = conn.cursor()
-    cur.execute("SELECT id, title, sizes, price_from, price_to FROM search_query WHERE google_sub=?", (google_sub,))
-    data = cur.fetchall()
-    conn.commit()
-    conn.close()
+    client = get_client()
+    result = client.execute("SELECT id, title, sizes, price_from, price_to FROM search_query WHERE google_sub=?", [google_sub])
+    data = [dict(zip(result.columns, row)) for row in result.rows]
+    client.close()
     return data
 
 def get_all_users():
-    conn = sqlite3.connect(db)
-    cur = conn.cursor()
-    cur.execute("SELECT google_sub FROM users")
-    data = cur.fetchall()
-    conn.commit()
-    conn.close()
+    client = get_client()
+    result = client.execute("SELECT google_sub FROM users")
+    data = [dict(zip(result.columns, row)) for row in result.rows]
+    client.close()
     return data
 
 def delete_search(id_search):
-    conn = sqlite3.connect(db)
-    cur = conn.cursor()
-    cur.execute("DELETE FROM search_query WHERE id=?", (id_search,))
-    conn.commit()
-    conn.close()
+    client = get_client()
+    client.execute("DELETE FROM search_query WHERE id=?", [id_search])
+    client.close()
 
 def make_search(dico):
     scraper = VintedScraper("https://www.vinted.fr")
