@@ -8,7 +8,7 @@ def get_client():
 def init_db():
     client = get_client()
     client.execute("CREATE TABLE IF NOT EXISTS users \
-                 (google_sub TEXT PRIMARY KEY, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
+                 (google_sub TEXT PRIMARY KEY, name TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
     client.execute("CREATE TABLE IF NOT EXISTS search_query \
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, google_sub TEXT REFERENCES users(google_sub), title TEXT, sizes TEXT, price_from TEXT, price_to TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);")
     client.close()
