@@ -10,6 +10,8 @@ st.sidebar.info("""
 if st.user.is_logged_in:
     st.sidebar.info(f"Logged in as {st.user.email}")
 
+st.json(st.user)
+
 init_db()
 
 st.session_state.title = ""
